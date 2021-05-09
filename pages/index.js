@@ -1,11 +1,10 @@
 import Head from "next/head";
 import { useState } from "react";
 import hexSorter from "hexsorter";
-// const colorArray = ["#cccccc", "#dddddd", "#eeeeee", "#ffffff", "#000000"];
-// const mostBright = hexSorter.sortColors(colorArray, "mostBrightColor");
 
 export default function Home() {
-  const [state, setState] = useState({ value: "", colorArray: [] });
+  const [value, setValue] = useState("");
+  const [colors, setColor] = useState([]);
   const createColorArray = (string) => {
     return string.split(/\r\n|\r|\n/);
   };
@@ -13,16 +12,15 @@ export default function Home() {
     return hexSorter.sortColors(array, "mostBrightColor");
   };
   const handleChange = (e) => {
-    setState({ value: e.target.value });
+    setValue(e.target.value);
   };
   const handleClick = (e) => {
     e.preventDefault();
-    const colors = createColorArray(state.value).filter(
+
+    const colorArray = createColorArray(value).filter(
       (element) => element.length > 1
     );
-    // const isBeginSharp = (currentValue) => {
-    //   return currentValue.charAt(0) === "#";
-    // };
+
     const is3Digits = (string) => {
       return string.length === 3 + 1;
     };
@@ -33,11 +31,11 @@ export default function Home() {
       return ["#", ...sixLetters].join("");
     };
 
-    const formatted = colors.map((element) => {
+    const formatted = colorArray.map((element) => {
       return is3Digits(element) ? convert3to6(element) : element;
     });
 
-    setState({ ...state, colorArray: sortByBrightness(formatted) });
+    setColor(sortByBrightness(formatted));
   };
   return (
     <div>
@@ -48,20 +46,24 @@ export default function Home() {
       </Head>
 
       <main>
-        <textarea onChange={handleChange} rows="10" cols="50" />
-        <button onClick={handleClick}>sort</button>
+        <textarea
+          onChange={handleChange}
+          rows="10"
+          cols="50"
+          placeholder="#aaaaaa&#13;#bbbbbb&#13;#cccccc"
+        />
         <div>
-          <code>{state.value}</code>
+          <button onClick={handleClick}>sort</button>
         </div>
         <div>
-          <code>{state.colorArray}</code>
+          <ul>
+            {colors.map((element, index) => (
+              <li key={index} style={{ backgroundColor: element }}>
+                {element}
+              </li>
+            ))}
+          </ul>
         </div>
-        {/* <div>
-          <code>{colorArray}</code>
-        </div>
-        <div>
-          <code>{mostBright}</code>
-        </div> */}
       </main>
     </div>
   );
