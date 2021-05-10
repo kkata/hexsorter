@@ -5,14 +5,21 @@ import hexSorter from "hexsorter";
 export default function Home() {
   const [value, setValue] = useState("");
   const [colors, setColor] = useState([]);
+  const [sort, setSort] = useState("saturation");
   const createColorArray = (string) => {
     return string.split(/\r\n|\r|\n/);
   };
   const sortByBrightness = (array) => {
     return hexSorter.sortColors(array, "mostBrightColor");
   };
+  const sortBySaturation = (array) => {
+    return hexSorter.sortColors(array, "mostSaturatedColor");
+  };
   const handleChange = (e) => {
     setValue(e.target.value);
+  };
+  const handleSortType = (e) => {
+    setSort(e.target.value);
   };
   const handleClick = (e) => {
     e.preventDefault();
@@ -35,7 +42,16 @@ export default function Home() {
       return is3Digits(element) ? convert3to6(element) : element;
     });
 
-    setColor(sortByBrightness(formatted));
+    switch (sort) {
+      case "saturation":
+        setColor(sortBySaturation(formatted));
+        break;
+      case "brightness":
+        setColor(sortByBrightness(formatted));
+        break;
+      default:
+        break;
+    }
   };
   return (
     <div>
@@ -52,6 +68,28 @@ export default function Home() {
           cols="50"
           placeholder="#aaaaaa&#13;#bbbbbb&#13;#cccccc"
         />
+        <div>
+          <label htmlFor="saturation">
+            <input
+              type="radio"
+              id="saturation"
+              value="saturation"
+              onChange={handleSortType}
+              checked={sort === "saturation"}
+            />
+            彩度
+          </label>
+          <label htmlFor="brightness">
+            <input
+              type="radio"
+              id="brightness"
+              value="brightness"
+              onChange={handleSortType}
+              checked={sort === "brightness"}
+            />
+            明度
+          </label>
+        </div>
         <div>
           <button onClick={handleClick}>sort</button>
         </div>
