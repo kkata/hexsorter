@@ -3,9 +3,9 @@ import { useState } from "react";
 import hexSorter from "hexsorter";
 
 export default function Home() {
-  const [value, setValue] = useState("");
+  const [inputs, setInputs] = useState("");
   const [colors, setColor] = useState([]);
-  const [sort, setSort] = useState("saturation");
+  const [sort, setSort] = useState("brightness");
   const createColorArray = (string) => {
     return string.split(/\r\n|\r|\n/);
   };
@@ -15,32 +15,31 @@ export default function Home() {
   const sortBySaturation = (array) => {
     return hexSorter.sortColors(array, "mostSaturatedColor");
   };
-  const handleChange = (e) => {
-    setValue(e.target.value);
+
+  const is3Digits = (string) => {
+    return string.length === 3 + 1;
+  };
+  const convert3to6 = (string3Digits) => {
+    const sixLetters = [...string3Digits.replace("#", "")].map((element) => {
+      return element.repeat(2);
+    });
+    return ["#", ...sixLetters].join("");
+  };
+
+  const formatted = createColorArray(inputs)
+    .filter((element) => element.length > 1)
+    .map((element) => {
+      return is3Digits(element) ? convert3to6(element) : element;
+    });
+
+  const handleInputs = (e) => {
+    setInputs(e.target.value);
   };
   const handleSortType = (e) => {
     setSort(e.target.value);
   };
   const handleClick = (e) => {
     e.preventDefault();
-
-    const colorArray = createColorArray(value).filter(
-      (element) => element.length > 1
-    );
-
-    const is3Digits = (string) => {
-      return string.length === 3 + 1;
-    };
-    const convert3to6 = (string3Digits) => {
-      const sixLetters = [...string3Digits.replace("#", "")].map((element) => {
-        return element.repeat(2);
-      });
-      return ["#", ...sixLetters].join("");
-    };
-
-    const formatted = colorArray.map((element) => {
-      return is3Digits(element) ? convert3to6(element) : element;
-    });
 
     switch (sort) {
       case "saturation":
@@ -63,22 +62,12 @@ export default function Home() {
 
       <main>
         <textarea
-          onChange={handleChange}
+          onChange={handleInputs}
           rows="10"
           cols="50"
           placeholder="#aaaaaa&#13;#bbbbbb&#13;#cccccc"
         />
         <div>
-          <label htmlFor="saturation">
-            <input
-              type="radio"
-              id="saturation"
-              value="saturation"
-              onChange={handleSortType}
-              checked={sort === "saturation"}
-            />
-            彩度
-          </label>
           <label htmlFor="brightness">
             <input
               type="radio"
@@ -88,6 +77,16 @@ export default function Home() {
               checked={sort === "brightness"}
             />
             明度
+          </label>
+          <label htmlFor="saturation">
+            <input
+              type="radio"
+              id="saturation"
+              value="saturation"
+              onChange={handleSortType}
+              checked={sort === "saturation"}
+            />
+            彩度
           </label>
         </div>
         <div>
