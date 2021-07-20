@@ -1,56 +1,64 @@
 import Head from "next/head";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import hexSorter from "hexsorter";
 
-export default function Home() {
-  const [inputs, setInputs] = useState("");
-  const [colors, setColor] = useState([]);
-  const [sort, setSort] = useState("brightness");
-  const createColorArray = (string) => {
-    return string.split(/\r\n|\r|\n/);
-  };
-  const sortByBrightness = (array) => {
-    return hexSorter.sortColors(array, "mostBrightColor");
-  };
-  const sortBySaturation = (array) => {
-    return hexSorter.sortColors(array, "mostSaturatedColor");
-  };
+const COLOR = {
+  type: {
+    brightness: "mostBrightColor",
+    saturation: "mostSaturatedColor",
+  },
+};
 
-  const is3Digits = (string) => {
-    return string.length === 3 + 1;
-  };
-  const convert3to6 = (string3Digits) => {
-    const sixLetters = [...string3Digits.replace("#", "")].map((element) => {
-      return element.repeat(2);
-    });
-    return ["#", ...sixLetters].join("");
-  };
+const createColorArray = (string) => {
+  return string.split(/\r\n|\r|\n/);
+};
 
-  const formatted = createColorArray(inputs)
+const is3Digits = (string) => {
+  return string.length === 3 + 1;
+};
+
+const convert3to6 = (string3Digits) => {
+  const sixLetters = [...string3Digits.replace("#", "")].map((element) => {
+    return element.repeat(2);
+  });
+  return ["#", ...sixLetters].join("");
+};
+
+const formatArray = (arr) => {
+  return arr
     .filter((element) => element.length > 1)
     .map((element) => {
       return is3Digits(element) ? convert3to6(element) : element;
     });
+};
 
-  const handleInputs = (e) => {
-    setInputs(e.target.value);
-  };
+const sortColor = (array, type) => {
+  switch (type) {
+    case COLOR.type.brightness:
+      return hexSorter.sortColors(array, COLOR.type.brightness);
+    case COLOR.type.saturation:
+      return hexSorter.sortColors(array, COLOR.type.saturation);
+    default:
+      break;
+  }
+};
+
+export default function Home() {
+  const [colors, setColor] = useState([]);
+  const [sortType, setSortType] = useState(COLOR.type.brightness);
+  const inputColorRef = useRef(null);
+
   const handleSortType = (e) => {
-    setSort(e.target.value);
+    setSortType(e.target.value);
   };
-  const handleClick = (e) => {
-    e.preventDefault();
 
-    switch (sort) {
-      case "saturation":
-        setColor(sortBySaturation(formatted));
-        break;
-      case "brightness":
-        setColor(sortByBrightness(formatted));
-        break;
-      default:
-        break;
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const colorArray = createColorArray(inputColorRef.current.value);
+    const formattedArray = formatArray(colorArray);
+    const sortedArray = sortColor(formattedArray, sortType);
+
+    setColor(sortedArray);
   };
   return (
     <div>
@@ -61,37 +69,40 @@ export default function Home() {
       </Head>
 
       <main>
-        <textarea
-          onChange={handleInputs}
-          rows="10"
-          cols="50"
-          placeholder="#aaaaaa&#13;#bbbbbb&#13;#cccccc"
-        />
-        <div>
-          <label htmlFor="brightness">
-            <input
-              type="radio"
-              id="brightness"
-              value="brightness"
-              onChange={handleSortType}
-              checked={sort === "brightness"}
-            />
-            明度
-          </label>
-          <label htmlFor="saturation">
-            <input
-              type="radio"
-              id="saturation"
-              value="saturation"
-              onChange={handleSortType}
-              checked={sort === "saturation"}
-            />
-            彩度
-          </label>
-        </div>
-        <div>
-          <button onClick={handleClick}>sort</button>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <textarea
+            ref={inputColorRef}
+            rows="10"
+            cols="50"
+            placeholder="#516373&#13;#f2b999&#13;#f2e8c9&#13;#6c838c&#13;#f2f2f2&#13;"
+            required
+          />
+          <div>
+            <label htmlFor={COLOR.type.brightness}>
+              <input
+                type="radio"
+                id={COLOR.type.brightness}
+                value={COLOR.type.brightness}
+                onChange={handleSortType}
+                checked={sortType === COLOR.type.brightness}
+              />
+              {COLOR.type.brightness}
+            </label>
+            <label htmlFor={COLOR.type.saturation}>
+              <input
+                type="radio"
+                id={COLOR.type.saturation}
+                value={COLOR.type.saturation}
+                onChange={handleSortType}
+                checked={sortType === COLOR.type.saturation}
+              />
+              {COLOR.type.saturation}
+            </label>
+          </div>
+          <div>
+            <button>sort</button>
+          </div>
+        </form>
         <div>
           <ul>
             {colors.map((element, index) => (
